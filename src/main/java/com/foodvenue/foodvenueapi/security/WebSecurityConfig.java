@@ -72,6 +72,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/api/usuarios/**").authenticated() // Bloquear acesso ao endpoint GET de usuários
                 .antMatchers(HttpMethod.PUT, "/api/usuarios/**").authenticated() // Bloquear acesso ao endpoint PUT de usuários
                 .antMatchers(HttpMethod.DELETE, "/api/usuarios/**").authenticated()
+                .antMatchers(HttpMethod.POST, "/api/restaurantes").hasAuthority("RESTAURANTE")
+                .antMatchers(HttpMethod.PUT, "/api/restaurantes/**").hasAuthority("RESTAURANTE")
+                .antMatchers(HttpMethod.DELETE, "/api/restaurantes/**").hasAuthority("RESTAURANTE")
+                .antMatchers("/api/admin/**").hasAuthority("RESTAURANTE")
                 .antMatchers("/api/auth/**")
                 .permitAll()
                 .antMatchers("/api/public/**")

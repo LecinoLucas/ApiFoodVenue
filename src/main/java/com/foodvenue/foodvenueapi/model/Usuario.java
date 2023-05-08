@@ -15,6 +15,19 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    public Usuario() {
+    }
+
+    public Usuario(Long id, String nome, String email, String senha, String telefone, Endereco endereco, TipoUsuario tipo) {
+        this.id = id;
+        this.nome = nome;
+        this.email = email;
+        this.senha = senha;
+        this.telefone = telefone;
+        this.endereco = endereco;
+        this.tipo = tipo;
+    }
+
     @NotBlank
     @Size(max = 255)
     private String nome;

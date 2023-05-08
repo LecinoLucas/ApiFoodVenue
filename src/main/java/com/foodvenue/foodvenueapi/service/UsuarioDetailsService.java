@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,8 +33,12 @@ public class UsuarioDetailsService implements UserDetailsService {
         Usuario usuario = optionalUsuario.get();
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(usuario.getTipo().toString()));
+        if (usuario.getTipo() == Usuario.TipoUsuario.cliente) {
+            authorities.add(new SimpleGrantedAuthority("CLIENTE"));
+        } else if (usuario.getTipo() == Usuario.TipoUsuario.restaurante) {
+            authorities.add(new SimpleGrantedAuthority("RESTAURANTE"));
+        }
 
-        return new User(usuario.getEmail(), usuario.getSenha(), authorities);
+        return new org.springframework.security.core.userdetails.User(usuario.getEmail(), usuario.getSenha(), authorities);
     }
 }
