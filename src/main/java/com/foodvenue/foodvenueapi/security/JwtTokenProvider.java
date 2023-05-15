@@ -31,7 +31,7 @@ public class JwtTokenProvider {
 
     public String getEmailFromJWT(String token) {
         Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
+                .setSigningKey("SeuJWTSecret")
                 .parseClaimsJws(token)
                 .getBody();
 

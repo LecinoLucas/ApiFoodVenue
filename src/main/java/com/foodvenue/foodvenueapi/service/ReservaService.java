@@ -26,7 +26,6 @@ public class ReservaService {
     public Reserva save(Reserva reserva) {
         return reservaRepository.save(reserva);
     }
-
     public void deleteById(Long id) {
         reservaRepository.deleteById(id);
     }

@@ -29,6 +29,10 @@ public class RestauranteService implements IRestauranteService {
         return restauranteRepository.save(restaurante);
     }
 
+    public Restaurante findByUserEmail(String email) {
+        return restauranteRepository.findByUsuario_Email(email);
+    }
+
     @Override
     public void deleteById(Long id) {
         restauranteRepository.deleteById(id);

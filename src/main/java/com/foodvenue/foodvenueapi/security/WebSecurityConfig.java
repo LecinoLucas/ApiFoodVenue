@@ -13,6 +13,12 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -46,6 +52,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         });
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Replace with the exact origin you want to allow
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     @Bean
     @Override
@@ -57,6 +75,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .cors()
+                .configurationSource(corsConfigurationSource())
                 .and()
                 .csrf()
                 .disable()
@@ -69,10 +88,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/restaurantes").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/usuarios/**").authenticated() // Bloquear acesso ao endpoint GET de usuários
                 .antMatchers(HttpMethod.PUT, "/api/usuarios/**").authenticated() // Bloquear acesso ao endpoint PUT de usuários
                 .antMatchers(HttpMethod.DELETE, "/api/usuarios/**").authenticated()
-                .antMatchers(HttpMethod.POST, "/api/restaurantes").hasAuthority("RESTAURANTE")
                 .antMatchers(HttpMethod.PUT, "/api/restaurantes/**").hasAuthority("RESTAURANTE")
                 .antMatchers(HttpMethod.DELETE, "/api/restaurantes/**").hasAuthority("RESTAURANTE")
                 .antMatchers("/api/admin/**").hasAuthority("RESTAURANTE")

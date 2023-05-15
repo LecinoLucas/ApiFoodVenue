@@ -36,7 +36,7 @@ public class UsuarioController {
 
     @PostMapping
     public ResponseEntity<CreateUserPayload> save(@RequestBody Usuario usuario) {
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha())); // Criptografe a senha antes de salvar
+        usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
         Usuario newUser = usuarioService.save(usuario);
         CreateUserPayload userDto = new CreateUserPayload(newUser.getId(), newUser.getNome(), newUser.getEmail(),
                 newUser.getTelefone(), newUser.getEndereco(), newUser.getTipo());

@@ -1,6 +1,7 @@
 package com.foodvenue.foodvenueapi.controller;
 
 import com.foodvenue.foodvenueapi.model.Restaurante;
+import com.foodvenue.foodvenueapi.security.JwtTokenProvider;
 import com.foodvenue.foodvenueapi.service.RestauranteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 @RestController
 @RequestMapping("/api/restaurantes")
@@ -32,6 +34,42 @@ public class RestauranteController {
     public ResponseEntity<Restaurante> save(@RequestBody Restaurante restaurante) {
         Restaurante newRestaurante = restauranteService.save(restaurante);
         return new ResponseEntity<>(newRestaurante, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/status")
+    public ResponseEntity<Restaurante> updateStatus( @RequestBody Map<String, Boolean> body, @RequestHeader("Authorization") String token) {
+        Boolean newStatus = body.get("aberto");
+        token = token.substring(7);
+
+        JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+        if (newStatus == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        String email = jwtTokenProvider.getEmailFromJWT(token);
+        Restaurante oldRestaurante = restauranteService.findByUserEmail(email);
+        if (oldRestaurante != null) {
+            Restaurante updatedRestaurante = oldRestaurante;
+            updatedRestaurante.setAberto(newStatus);
+            restauranteService.save(updatedRestaurante);
+            return new ResponseEntity<>(updatedRestaurante, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/get")
+    public ResponseEntity<Restaurante> getRestauranteByUserEmail(@RequestHeader("Authorization") String token) {
+        token = token.substring(7);
+
+        JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+        String email = jwtTokenProvider.getEmailFromJWT(token);
+        Restaurante restaurante = restauranteService.findByUserEmail(email);
+
+        if (restaurante != null) {
+            return new ResponseEntity<>(restaurante, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping("/{id}")
