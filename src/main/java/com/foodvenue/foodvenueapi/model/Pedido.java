@@ -1,9 +1,11 @@
 package com.foodvenue.foodvenueapi.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.foodvenue.foodvenueapi.utils.EnderecoJsonConverter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "pedidos")
@@ -35,6 +37,9 @@ public class Pedido {
     @Convert(converter = EnderecoJsonConverter.class)
     private Endereco enderecoEntrega;
 
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<ItemPedido> itens;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private PedidoStatus status;
@@ -77,6 +82,14 @@ public class Pedido {
 
     public PedidoStatus getStatus() {
         return status;
+    }
+
+    public List<ItemPedido> getItens() {
+        return itens;
+    }
+
+    public void setItens(List<ItemPedido> itens) {
+        this.itens = itens;
     }
 
     public void setStatus(PedidoStatus status) {
