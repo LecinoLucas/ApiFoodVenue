@@ -2,17 +2,20 @@ package com.foodvenue.foodvenueapi.model;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.sql.Blob;
+import java.sql.SQLException;
+import java.util.Base64;
 
 @Entity
 @Table(name = "pratos")
 public class Prato {
-    public Prato(Long id, Restaurante restaurante, String nome, String descricao, BigDecimal preco, String imagem) {
+    public Prato(Long id, Restaurante restaurante, String nome, String descricao, BigDecimal preco, byte[] imagem) {
         this.id = id;
         this.restaurante = restaurante;
         this.nome = nome;
         this.descricao = descricao;
         this.preco = preco;
-        this.imagem = imagem;
+        this.imagemBytes = imagem;
     }
 
     public Prato() {
@@ -34,7 +37,9 @@ public class Prato {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal preco;
 
-    private String imagem;
+    @Lob
+    @Column(name = "imagem_blob")
+    private byte[] imagemBytes;
 
     public Long getId() {
         return id;
@@ -76,11 +81,12 @@ public class Prato {
         this.preco = preco;
     }
 
-    public String getImagem() {
-        return imagem;
+    public byte[] getImagemBytes() {
+        return imagemBytes;
     }
 
-    public void setImagem(String imagem) {
-        this.imagem = imagem;
+    public void setImagemBytes(byte[] imagemBytes) {
+        this.imagemBytes = imagemBytes;
     }
+
 }

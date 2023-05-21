@@ -5,6 +5,8 @@ import lombok.Data;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.sql.Blob;
+import java.sql.SQLException;
 
 @Entity
 @Table(name = "restaurantes")
@@ -13,12 +15,12 @@ public class Restaurante {
     public Restaurante() {
     }
 
-    public Restaurante(Long id, Usuario usuario, String nome, String descricao, String imagem, boolean aberto) {
+    public Restaurante(Long id, Usuario usuario, String nome, String descricao, byte[] imagem, boolean aberto) {
         this.id = id;
         this.usuario = usuario;
         this.nome = nome;
         this.descricao = descricao;
-        this.imagem = imagem;
+        this.imagemBytes = imagem;
         this.aberto = aberto;
     }
 
@@ -29,6 +31,22 @@ public class Restaurante {
     @OneToOne
     @JoinColumn(name = "usuario_id", referencedColumnName = "id")
     private Usuario usuario;
+
+    @NotBlank
+    @Size(max = 255)
+    private String nome;
+
+    @Lob
+    @Column(name = "imagem_blob")
+    private Blob imagem;
+
+    // Getter e Setter para o campo imagemBytes
+    @Transient
+    private byte[] imagemBytes;
+
+    private String descricao;
+
+    private boolean aberto;
 
     public Long getId() {
         return id;
@@ -54,20 +72,25 @@ public class Restaurante {
         this.nome = nome;
     }
 
+    public byte[] getImagemBytes() {
+        return imagemBytes;
+    }
+
+    public void setImagemBytes(byte[] imagemBytes) {
+        this.imagemBytes = imagemBytes;
+        try {
+            this.imagem = new javax.sql.rowset.serial.SerialBlob(imagemBytes);
+        } catch (SQLException e) {
+            // Tratar o erro, se necessário
+        }
+    }
+
     public String getDescricao() {
         return descricao;
     }
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
-    }
-
-    public String getImagem() {
-        return imagem;
-    }
-
-    public void setImagem(String imagem) {
-        this.imagem = imagem;
     }
 
     public boolean isAberto() {
@@ -77,15 +100,4 @@ public class Restaurante {
     public void setAberto(boolean aberto) {
         this.aberto = aberto;
     }
-
-    @NotBlank
-    @Size(max = 255)
-    private String nome;
-
-    @Lob
-    private String descricao;
-
-    private String imagem;
-
-    private boolean aberto;
 }

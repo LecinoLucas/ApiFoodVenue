@@ -1,6 +1,7 @@
 package com.foodvenue.foodvenueapi.controller;
 
 import com.foodvenue.foodvenueapi.model.Restaurante;
+import com.foodvenue.foodvenueapi.payload.RestauranteDTO;
 import com.foodvenue.foodvenueapi.security.JwtTokenProvider;
 import com.foodvenue.foodvenueapi.service.RestauranteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,9 +9,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sql.rowset.serial.SerialBlob;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/restaurantes")
 public class RestauranteController {
@@ -27,17 +32,20 @@ public class RestauranteController {
     @GetMapping("/{id}")
     public ResponseEntity<Restaurante> findById(@PathVariable Long id) {
         Optional<Restaurante> restaurante = restauranteService.findById(id);
-        return restaurante.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return restaurante.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping
-    public ResponseEntity<Restaurante> save(@RequestBody Restaurante restaurante) {
+    public ResponseEntity<Restaurante> save(@RequestBody RestauranteDTO restauranteDTO) {
+        Restaurante restaurante = convertRestauranteDTOtoEntity(restauranteDTO);
         Restaurante newRestaurante = restauranteService.save(restaurante);
         return new ResponseEntity<>(newRestaurante, HttpStatus.CREATED);
     }
 
     @PutMapping("/status")
-    public ResponseEntity<Restaurante> updateStatus( @RequestBody Map<String, Boolean> body, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Restaurante> updateStatus(@RequestBody Map<String, Boolean> body,
+                                                    @RequestHeader("Authorization") String token) {
         Boolean newStatus = body.get("aberto");
         token = token.substring(7);
 
@@ -73,24 +81,54 @@ public class RestauranteController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Restaurante> update(@PathVariable Long id, @RequestBody Restaurante restaurante) {
+    public ResponseEntity<Restaurante> update(@PathVariable Long id, @RequestBody RestauranteDTO restauranteDTO) {
         Optional<Restaurante> oldRestaurante = restauranteService.findById(id);
         if (oldRestaurante.isPresent()) {
             Restaurante updatedRestaurante = oldRestaurante.get();
-            updatedRestaurante.setNome(restaurante.getNome());
-            updatedRestaurante.setDescricao(restaurante.getDescricao());
-            updatedRestaurante.setImagem(restaurante.getImagem());
-            updatedRestaurante.setAberto(restaurante.isAberto());
+            updatedRestaurante.setNome(restauranteDTO.getNome());
+            updatedRestaurante.setDescricao(restauranteDTO.getDescricao());
+            updatedRestaurante.setAberto(restauranteDTO.isAberto());
+
+            // Converter a string de imagem em um objeto Blob
+            if (restauranteDTO.getImagem() != null) {
+                try {
+                    Blob imagemBlob = new SerialBlob(restauranteDTO.getImagem().getBytes());
+                    updatedRestaurante.setImagem(imagemBlob);
+                } catch (SQLException e) {
+                    // Lidar com a exceção, se necessário
+                }
+            }
+
             restauranteService.save(updatedRestaurante);
             return new ResponseEntity<>(updatedRestaurante, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-        @DeleteMapping("/{id}")
-        public ResponseEntity<Void> deleteById (@PathVariable Long id){
-            restauranteService.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-}
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+        restauranteService.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    // Método auxiliar para converter RestauranteDTO em Restaurante
+    private Restaurante convertRestauranteDTOtoEntity(RestauranteDTO restauranteDTO) {
+        Restaurante restaurante = new Restaurante();
+        restaurante.setNome(restauranteDTO.getNome());
+        restaurante.setDescricao(restauranteDTO.getDescricao());
+        restaurante.setAberto(restauranteDTO.isAberto());
+
+        // Converter a string de imagem em um objeto Blob
+        if (restauranteDTO.getImagem() != null) {
+            try {
+                Blob imagemBlob = new SerialBlob(restauranteDTO.getImagem().getBytes());
+                restaurante.setImagem(imagemBlob);
+            } catch (SQLException e) {
+                // Lidar com a exceção, se necessário
+            }
+        }
+
+        return restaurante;
+    }
+}
