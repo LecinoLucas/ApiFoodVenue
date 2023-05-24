@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PratoService implements IPratoService{
@@ -15,15 +16,17 @@ public class PratoService implements IPratoService{
     private PratoRepository pratoRepository;
 
     public List<Prato> findAll() {
-        return pratoRepository.findAll();
+        return pratoRepository.findAll().stream()
+                .filter(prato -> !prato.isDeletado())
+                .collect(Collectors.toList());
     }
 
     public Prato findById(Long id) {
-        return pratoRepository.findById(id).orElseThrow(() -> new Error("Prato não encontrado"));
+        return pratoRepository.findByIdAndDeletadoFalse(id)
+                .orElseThrow(() -> new RuntimeException("Prato não encontrado"));
     }
-
     public List<Prato> findByRestauranteId(Long restauranteId) {
-        return pratoRepository.findByRestauranteId(restauranteId);
+        return pratoRepository.findByRestauranteIdAndDeletadoFalse(restauranteId);
     }
 
     public Prato save(Prato prato) {

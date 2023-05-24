@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.sql.rowset.serial.SerialBlob;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -89,15 +90,16 @@ public class RestauranteController {
             updatedRestaurante.setDescricao(restauranteDTO.getDescricao());
             updatedRestaurante.setAberto(restauranteDTO.isAberto());
 
-            // Converter a string de imagem em um objeto Blob
-            if (restauranteDTO.getImagem() != null) {
-                try {
-                    Blob imagemBlob = new SerialBlob(restauranteDTO.getImagem().getBytes());
-                    updatedRestaurante.setImagem(imagemBlob);
-                } catch (SQLException e) {
-                    // Lidar com a exceção, se necessário
-                }
+            // Remover a parte da URI que especifica o tipo de mídia
+            String imagemBase64 = restauranteDTO.getImagem();
+            int index = imagemBase64.indexOf(",");
+            if (index != -1) {
+                imagemBase64 = imagemBase64.substring(index + 1);
             }
+
+            // Converter a imagem base64 para um array de bytes
+            byte[] imagemBytes = Base64.getDecoder().decode(imagemBase64);
+            updatedRestaurante.setImagemBytes(imagemBytes);
 
             restauranteService.save(updatedRestaurante);
             return new ResponseEntity<>(updatedRestaurante, HttpStatus.OK);
@@ -105,6 +107,7 @@ public class RestauranteController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Long id) {
@@ -119,15 +122,16 @@ public class RestauranteController {
         restaurante.setDescricao(restauranteDTO.getDescricao());
         restaurante.setAberto(restauranteDTO.isAberto());
 
-        // Converter a string de imagem em um objeto Blob
-        if (restauranteDTO.getImagem() != null) {
-            try {
-                Blob imagemBlob = new SerialBlob(restauranteDTO.getImagem().getBytes());
-                restaurante.setImagem(imagemBlob);
-            } catch (SQLException e) {
-                // Lidar com a exceção, se necessário
-            }
+        // Remover a parte da URI que especifica o tipo de mídia
+        String imagemBase64 = restauranteDTO.getImagem();
+        int index = imagemBase64.indexOf(",");
+        if (index != -1) {
+            imagemBase64 = imagemBase64.substring(index + 1);
         }
+
+        // Converter a imagem base64 para um array de bytes
+        byte[] imagemBytes = Base64.getDecoder().decode(imagemBase64);
+        restaurante.setImagemBytes(imagemBytes);
 
         return restaurante;
     }

@@ -5,7 +5,10 @@ public enum PedidoStatus {
     AGUARDANDO_APROVACAO,
     PREPARANDO,
     A_CAMINHO,
-    ENTREGUE;
+    ENTREGUE,
+    CANCELADO;
+
+
 
     public static PedidoStatus fromString(String status) {
         for (PedidoStatus pedidoStatus : PedidoStatus.values()) {

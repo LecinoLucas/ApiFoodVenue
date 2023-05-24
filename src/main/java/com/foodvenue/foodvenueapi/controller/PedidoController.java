@@ -1,6 +1,7 @@
 package com.foodvenue.foodvenueapi.controller;
 
 import com.foodvenue.foodvenueapi.model.Pedido;
+import com.foodvenue.foodvenueapi.model.PedidoStatus;
 import com.foodvenue.foodvenueapi.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -42,7 +43,19 @@ public class PedidoController {
     }
 
 
-
+    @PutMapping("/{id}/cancelar")
+    public ResponseEntity<Pedido> cancelarPedido(@PathVariable Long id) {
+        Pedido pedido = pedidoService.findById(id);
+        if (pedido == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (pedido.getStatus() == PedidoStatus.ENTREGUE) {
+            return ResponseEntity.badRequest().build();
+        }
+        pedido.setStatus(PedidoStatus.CANCELADO);
+        Pedido updatedPedido = pedidoService.save(pedido);
+        return ResponseEntity.ok(updatedPedido);
+    }
 
     @PostMapping
     public ResponseEntity<Pedido> createPedido(@RequestBody @Valid Pedido pedido) {

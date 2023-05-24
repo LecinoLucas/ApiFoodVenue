@@ -38,7 +38,7 @@ public class Restaurante {
 
     @Lob
     @Column(name = "imagem_blob")
-    private Blob imagem;
+    private byte[] imagem;
 
     // Getter e Setter para o campo imagemBytes
     @Transient
@@ -78,11 +78,7 @@ public class Restaurante {
 
     public void setImagemBytes(byte[] imagemBytes) {
         this.imagemBytes = imagemBytes;
-        try {
-            this.imagem = new javax.sql.rowset.serial.SerialBlob(imagemBytes);
-        } catch (SQLException e) {
-            // Tratar o erro, se necessário
-        }
+        this.imagem = imagemBytes;
     }
 
     public String getDescricao() {

@@ -1,5 +1,7 @@
 package com.foodvenue.foodvenueapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Blob;
@@ -29,6 +31,8 @@ public class Prato {
     @JoinColumn(name = "restaurante_id", nullable = false)
     private Restaurante restaurante;
 
+    @Column(name = "deletado", nullable = false)
+    private boolean deletado;
     @Column(nullable = false)
     private String nome;
 
@@ -48,7 +52,15 @@ public class Prato {
     public void setId(Long id) {
         this.id = id;
     }
+    @JsonIgnore
+    public boolean isDeletado() {
+        return deletado;
+    }
 
+    @JsonIgnore
+    public void setDeletado(boolean deletado) {
+        this.deletado = deletado;
+    }
     public Restaurante getRestaurante() {
         return restaurante;
     }

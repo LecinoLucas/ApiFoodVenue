@@ -97,7 +97,9 @@ public class PratoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePrato(@PathVariable Long id) {
-        pratoService.delete(id);
+        Prato prato = pratoService.findById(id);
+        prato.setDeletado(true);
+        pratoService.save(prato);
         return ResponseEntity.ok().build();
     }
 }
