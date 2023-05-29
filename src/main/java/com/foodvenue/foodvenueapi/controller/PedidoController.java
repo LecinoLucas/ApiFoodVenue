@@ -1,15 +1,22 @@
 package com.foodvenue.foodvenueapi.controller;
 
-import com.foodvenue.foodvenueapi.model.Pedido;
-import com.foodvenue.foodvenueapi.model.PedidoStatus;
+import com.foodvenue.foodvenueapi.model.*;
+import com.foodvenue.foodvenueapi.payload.ItemPedidoDTO;
+import com.foodvenue.foodvenueapi.payload.PedidoCreateDTO;
 import com.foodvenue.foodvenueapi.service.PedidoService;
+import com.foodvenue.foodvenueapi.service.PratoService;
+import com.foodvenue.foodvenueapi.service.RestauranteService;
+import com.foodvenue.foodvenueapi.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pedidos")
@@ -17,6 +24,15 @@ public class PedidoController {
 
     @Autowired
     private PedidoService pedidoService;
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
+    private RestauranteService restauranteService;
+
+    @Autowired
+    private PratoService pratoService;
 
     @GetMapping
     public ResponseEntity<List<Pedido>> getAllPedidos() {
@@ -57,6 +73,40 @@ public class PedidoController {
         return ResponseEntity.ok(updatedPedido);
     }
 
+    @PostMapping("/new")
+    public ResponseEntity<Pedido> createPedido(@RequestBody @Valid PedidoCreateDTO pedidoCreateDTO) {
+        Optional <Usuario> cliente = usuarioService.findById(pedidoCreateDTO.getClienteId());
+        Optional <Restaurante> restaurante = restauranteService.findById(pedidoCreateDTO.getRestauranteId());
+        Endereco enderecoEntrega = pedidoCreateDTO.getEnderecoEntrega();
+
+        Pedido pedido = new Pedido();
+        pedido.setCliente(cliente.get());
+        pedido.setRestaurante(restaurante.get());
+        pedido.setEnderecoEntrega(enderecoEntrega);
+        pedido.setStatus(PedidoStatus.AGUARDANDO_APROVACAO);
+        pedido.setDataHora(LocalDateTime.now());
+
+        List<ItemPedido> itens = new ArrayList<>();
+
+        for (ItemPedidoDTO itemPedidoDTO : pedidoCreateDTO.getItens()) {
+            Prato prato = pratoService.findById(itemPedidoDTO.getProdutoId());
+            Integer quantidade = 1;
+            String observacoes = "Em andamento";
+
+            ItemPedido itemPedido = new ItemPedido();
+            itemPedido.setPedido(pedido);
+            itemPedido.setPrato(prato);
+            itemPedido.setQuantidade(quantidade);
+            itemPedido.setObservacoes(observacoes);
+
+            itens.add(itemPedido);
+        }
+
+        pedido.setItens(itens);
+
+        Pedido createdPedido = pedidoService.save(pedido);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdPedido);
+    }
     @PostMapping
     public ResponseEntity<Pedido> createPedido(@RequestBody @Valid Pedido pedido) {
         Pedido createdPedido = pedidoService.save(pedido);

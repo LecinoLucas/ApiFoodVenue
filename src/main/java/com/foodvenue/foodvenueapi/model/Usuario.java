@@ -1,5 +1,6 @@
 package com.foodvenue.foodvenueapi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.foodvenue.foodvenueapi.utils.EnderecoJsonConverter;
 import lombok.Data;
 import javax.persistence.*;
@@ -39,6 +40,7 @@ public class Usuario {
     private String email;
 
     @NotBlank
+    @JsonIgnore
     @Size(max = 255)
     private String senha;
 

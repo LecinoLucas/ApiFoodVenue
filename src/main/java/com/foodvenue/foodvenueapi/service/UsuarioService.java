@@ -33,6 +33,11 @@ public class UsuarioService implements IUsuarioService {
     public void deleteById(Long id) {
         usuarioRepository.deleteById(id);
     }
+
+    @Override
+    public Optional<Usuario> getByEmail(String email){
+        return usuarioRepository.findByEmail(email);
+    }
     @Override
     public boolean existsByEmail(String email) {
         Optional<Usuario> usuario = usuarioRepository.findByEmail(email);

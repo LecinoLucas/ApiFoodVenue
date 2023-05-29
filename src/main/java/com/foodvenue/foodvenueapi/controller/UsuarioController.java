@@ -2,6 +2,7 @@ package com.foodvenue.foodvenueapi.controller;
 
 import com.foodvenue.foodvenueapi.model.Usuario;
 import com.foodvenue.foodvenueapi.payload.CreateUserPayload;
+import com.foodvenue.foodvenueapi.security.JwtTokenProvider;
 import com.foodvenue.foodvenueapi.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,7 +34,20 @@ public class UsuarioController {
         Optional<Usuario> usuario = usuarioService.findById(id);
         return usuario.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+    @GetMapping("/get")
+    public ResponseEntity<Usuario> findUserByUserEmail(@RequestHeader("Authorization") String token) {
+        token = token.substring(7);
 
+        JwtTokenProvider jwtTokenProvider = new JwtTokenProvider();
+        String email = jwtTokenProvider.getEmailFromJWT(token);
+
+        Optional<Usuario> usuario = usuarioService.getByEmail(email);
+        if (usuario.isPresent()) {
+            return new ResponseEntity<>(usuario.get(), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
     @PostMapping
     public ResponseEntity<CreateUserPayload> save(@RequestBody Usuario usuario) {
         usuario.setSenha(passwordEncoder.encode(usuario.getSenha()));
@@ -48,12 +62,8 @@ public class UsuarioController {
         Optional<Usuario> oldUser = usuarioService.findById(id);
         if (oldUser.isPresent()) {
             Usuario newUser = oldUser.get();
-            newUser.setNome(usuario.getNome());
-            newUser.setEmail(usuario.getEmail());
-            newUser.setSenha(passwordEncoder.encode(usuario.getSenha())); // Criptografe a senha antes de salvar
             newUser.setTelefone(usuario.getTelefone());
             newUser.setEndereco(usuario.getEndereco());
-            newUser.setTipo(usuario.getTipo());
             usuarioService.save(newUser);
             return new ResponseEntity<>(newUser, HttpStatus.OK);
         } else {

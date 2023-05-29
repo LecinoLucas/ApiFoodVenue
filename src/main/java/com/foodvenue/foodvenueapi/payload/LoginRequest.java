@@ -12,6 +12,19 @@ public class LoginRequest {
     @NotBlank
     private String senha;
 
+    public ClientType getClientType() {
+        return clientType;
+    }
+
+    public void setClientType(ClientType clientType) {
+        this.clientType = clientType;
+    }
+    @NotBlank
+    private ClientType clientType;
+
+    public enum ClientType{
+        RESTAURANTE, DELIVERY
+    }
     public String getEmail() {
         return email;
     }

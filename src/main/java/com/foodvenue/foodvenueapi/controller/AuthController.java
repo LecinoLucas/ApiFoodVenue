@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -44,7 +45,16 @@ public class AuthController {
                         loginRequest.getSenha()
                 )
         );
-
+        Optional<Usuario> usuario = usuarioService.getByEmail(loginRequest.getEmail());
+        if(!usuario.isPresent()){
+                return new ResponseEntity<>(new ApiResponse(false, "Email ou senha invalidos!"), HttpStatus.BAD_REQUEST);
+        }
+        if(loginRequest.getClientType() == LoginRequest.ClientType.RESTAURANTE && usuario.get().getTipo() != Usuario.TipoUsuario.restaurante ){
+            return new ResponseEntity<>(new ApiResponse(false, "Email ou senha invalidos!"), HttpStatus.BAD_REQUEST);
+        }
+        if(loginRequest.getClientType() == LoginRequest.ClientType.DELIVERY && usuario.get().getTipo() != Usuario.TipoUsuario.cliente ){
+            return new ResponseEntity<>(new ApiResponse(false, "Email ou senha invalidos!"), HttpStatus.BAD_REQUEST);
+        }
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtTokenProvider.generateToken(authentication.getName());
         return ResponseEntity.ok(new LoginResponse(jwt));

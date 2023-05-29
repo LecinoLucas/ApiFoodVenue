@@ -9,5 +9,8 @@ public interface IUsuarioService {
     Optional<Usuario> findById(Long id);
     Usuario save(Usuario usuario);
     void deleteById(Long id);
+
+    Optional<Usuario> getByEmail(String email);
+
     boolean existsByEmail(String email);
 }
