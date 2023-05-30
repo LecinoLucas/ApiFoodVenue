@@ -88,7 +88,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
+
                 .antMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                .antMatchers("/mywebsockets/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/usuarios").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/restaurantes").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/usuarios/**").authenticated() // Bloquear acesso ao endpoint GET de usuários
@@ -103,6 +105,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .permitAll()
                 .anyRequest()
                 .authenticated();
+
 
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }

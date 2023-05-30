@@ -1,12 +1,15 @@
 package com.foodvenue.foodvenueapi.service;
 
 import com.foodvenue.foodvenueapi.model.Pedido;
+import com.foodvenue.foodvenueapi.model.PedidoStatus;
 import com.foodvenue.foodvenueapi.repository.PedidoRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PedidoService implements IPedidoService{
@@ -26,6 +29,9 @@ public class PedidoService implements IPedidoService{
         return pedidoRepository.findByClienteId(clienteId);
     }
 
+    public Optional<Pedido> findPedidosNotEntregueOrCancelado(Long clienteId) {
+        return pedidoRepository.findFirstByClienteIdAndStatusNotInOrderByDataHoraDesc(clienteId, Arrays.asList(PedidoStatus.ENTREGUE, PedidoStatus.CANCELADO));
+    }
     public List<Pedido> findByRestauranteId(Long restauranteId) {
         return pedidoRepository.findByRestauranteId(restauranteId);
     }

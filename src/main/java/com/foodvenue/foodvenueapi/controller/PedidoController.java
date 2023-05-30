@@ -10,6 +10,7 @@ import com.foodvenue.foodvenueapi.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -25,6 +26,8 @@ public class PedidoController {
     @Autowired
     private PedidoService pedidoService;
 
+    @Autowired
+    private SimpMessagingTemplate template;
     @Autowired
     private UsuarioService usuarioService;
 
@@ -44,6 +47,17 @@ public class PedidoController {
     public ResponseEntity<Pedido> getPedidoById(@PathVariable Long id) {
         Pedido pedido = pedidoService.findById(id);
         return ResponseEntity.ok(pedido);
+    }
+
+
+    @GetMapping("/status/{id}")
+    public ResponseEntity<Pedido> getPedidoByStatus(@PathVariable Long id) {
+        Optional<Pedido> optionalPedido = pedidoService.findPedidosNotEntregueOrCancelado(id);
+        if (optionalPedido.isPresent()) {
+            return ResponseEntity.ok(optionalPedido.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/cliente/{clienteId}")
@@ -70,6 +84,7 @@ public class PedidoController {
         }
         pedido.setStatus(PedidoStatus.CANCELADO);
         Pedido updatedPedido = pedidoService.save(pedido);
+        this.template.convertAndSend("/topic/pedidos/"+id,updatedPedido);
         return ResponseEntity.ok(updatedPedido);
     }
 
@@ -105,6 +120,7 @@ public class PedidoController {
         pedido.setItens(itens);
 
         Pedido createdPedido = pedidoService.save(pedido);
+        this.template.convertAndSend("/topic/pedidos/new/" + restaurante.get().getId(), createdPedido);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdPedido);
     }
     @PostMapping
@@ -116,6 +132,7 @@ public class PedidoController {
     @PutMapping("/{id}")
     public ResponseEntity<Pedido> updatePedido(@PathVariable Long id, @RequestBody @Valid Pedido pedido) {
         Pedido updatedPedido = pedidoService.update(id, pedido);
+        this.template.convertAndSend("/topic/pedidos/" + id, updatedPedido);
         return ResponseEntity.ok(updatedPedido);
     }
 
